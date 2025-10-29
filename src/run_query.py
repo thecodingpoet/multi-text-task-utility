@@ -1,9 +1,43 @@
 from openai import OpenAI
 from dotenv import load_dotenv
+from datetime import datetime
+from pathlib import Path
+
 import json
 import time
 
 load_dotenv()
+
+
+def log_metrics(query, response, latency_ms, cost):
+    """Log metrics to metrics.json"""
+    metrics_path = Path("metrics/metrics.json")
+
+    if metrics_path.exists() and metrics_path.stat().st_size > 0:
+        with open(metrics_path, "r", encoding="utf-8") as f:
+            metrics = json.load(f)
+    else:
+        metrics = []
+
+    metric_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "query": query,
+        "latency_ms": round(latency_ms, 2),
+        "total_tokens": response.usage.total_tokens,
+        "prompt_tokens": response.usage.prompt_tokens,
+        "completion_tokens": response.usage.completion_tokens,
+        "cost": round(cost, 6),
+        "model": "gpt-4o-mini",
+    }
+
+    metrics.append(metric_entry)
+    with open(metrics_path, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2, ensure_ascii=False)
+
+
+def calculate_cost(prompt_tokens, completion_tokens):
+    return (prompt_tokens / 1_000_000) * 0.15 + (completion_tokens / 1_000_000) * 0.60
+
 
 with open("prompts/main_prompt.txt", "r", encoding="utf-8") as f:
     system_prompt = f.read()
@@ -42,21 +76,10 @@ while True:
     end = time.perf_counter()
     latency_ms = (end - start) * 1000
 
-    print(f"Time taken: {latency_ms} milliseconds")
+    cost = calculate_cost(
+        response.usage.prompt_tokens, response.usage.completion_tokens
+    )
 
-    print("--------------------------------")
-
-    print(f"Total tokens: {response.usage.total_tokens:,}")
-    print(f"Prompt tokens: {response.usage.prompt_tokens:,}")
-    print(f"Completion tokens: {response.usage.completion_tokens:,}")
-
-    print("--------------------------------")
-
-    cost = (response.usage.prompt_tokens / 1_000_000) * 0.15 + (
-        response.usage.completion_tokens / 1_000_000
-    ) * 0.60
-    print(f"Cost: ${cost:.6f}")
-
-    print("--------------------------------")
+    log_metrics(query, response, latency_ms, cost)
 
     print(json.dumps(json.loads(response.choices[0].message.content), indent=4))
