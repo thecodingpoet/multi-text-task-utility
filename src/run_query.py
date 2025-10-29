@@ -1,22 +1,25 @@
+import json, time
+
 from openai import OpenAI
 from dotenv import load_dotenv
 from datetime import datetime
 from pathlib import Path
 
-import json
-import time
 
 load_dotenv()
 
+MODEL = "gpt-4o-mini"
+PROMPT_TOKEN_COST = 0.15
+COMPLETION_TOKEN_COST = 0.60
+
 
 def log_metrics(query, response, latency_ms, cost):
-    """Log metrics to metrics.json"""
     metrics_path = Path("metrics/metrics.json")
 
-    if metrics_path.exists() and metrics_path.stat().st_size > 0:
-        with open(metrics_path, "r", encoding="utf-8") as f:
+    try:
+        with metrics_path.open("r", encoding="utf-8") as f:
             metrics = json.load(f)
-    else:
+    except (FileNotFoundError, json.JSONDecodeError):
         metrics = []
 
     metric_entry = {
@@ -27,59 +30,70 @@ def log_metrics(query, response, latency_ms, cost):
         "prompt_tokens": response.usage.prompt_tokens,
         "completion_tokens": response.usage.completion_tokens,
         "cost": round(cost, 6),
-        "model": "gpt-4o-mini",
+        "model": MODEL,
     }
 
     metrics.append(metric_entry)
-    with open(metrics_path, "w", encoding="utf-8") as f:
+    with metrics_path.open("w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2, ensure_ascii=False)
 
 
 def calculate_cost(prompt_tokens, completion_tokens):
-    return (prompt_tokens / 1_000_000) * 0.15 + (completion_tokens / 1_000_000) * 0.60
+    return (prompt_tokens / 1_000_000) * PROMPT_TOKEN_COST + (
+        completion_tokens / 1_000_000
+    ) * COMPLETION_TOKEN_COST
 
 
-with open("prompts/main_prompt.txt", "r", encoding="utf-8") as f:
-    system_prompt = f.read()
-
-messages = [
-    {
-        "role": "system",
-        "content": system_prompt,
-    }
-]
-
-client = OpenAI()
-
-while True:
-    query = input("Enter a query (or 'exit' to quit): ")
-
-    if query == "exit":
-        break
-
-    user_prompt = (
+def format_user_query(query):
+    return (
         f"User: {query}\n\nReturn only valid JSON in the exact structure shown above."
     )
 
+
+def format_response(content):
+    return json.dumps(json.loads(content), indent=4)
+
+
+def process_query(client, messages, query):
+    user_prompt = format_user_query(query)
     messages.append({"role": "user", "content": user_prompt})
 
     start = time.perf_counter()
-
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=MODEL,
         messages=messages,
         temperature=0.2,
         response_format={"type": "json_object"},
         max_tokens=300,
     )
-
     end = time.perf_counter()
-    latency_ms = (end - start) * 1000
 
+    latency_ms = (end - start) * 1000
     cost = calculate_cost(
         response.usage.prompt_tokens, response.usage.completion_tokens
     )
 
-    log_metrics(query, response, latency_ms, cost)
+    return response, latency_ms, cost
 
-    print(json.dumps(json.loads(response.choices[0].message.content), indent=4))
+
+def main():
+    system_prompt = Path("prompts/main_prompt.txt").read_text(encoding="utf-8")
+    messages = [{"role": "system", "content": system_prompt}]
+
+    client = OpenAI()
+
+    while True:
+        query = input("Enter a query (or 'exit' to quit): ")
+
+        if query == "exit":
+            break
+
+        response, latency_ms, cost = process_query(client, messages, query)
+
+        log_metrics(query, response, latency_ms, cost)
+
+        print(format_response(response.choices[0].message.content))
+
+
+if __name__ == "__main__":
+    main()
