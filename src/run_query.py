@@ -32,7 +32,7 @@ def log_metrics(query, response, latency_ms, cost):
         "cost": round(cost, 6),
         "model": MODEL,
     }
-
+ 
     metrics.append(metric_entry)
     with metrics_path.open("w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2, ensure_ascii=False)
@@ -46,7 +46,7 @@ def calculate_cost(prompt_tokens, completion_tokens):
 
 def format_user_query(query):
     return (
-        f"User: {query}\n\nReturn only valid JSON in the exact structure shown above."
+        f"User: {query}"
     )
 
 
@@ -83,7 +83,7 @@ def main():
     client = OpenAI()
 
     while True:
-        query = input("Enter a query (or 'exit' to quit): ")
+        query = input("Ask a question or type 'exit' to quit: ")
 
         if query == "exit":
             break
