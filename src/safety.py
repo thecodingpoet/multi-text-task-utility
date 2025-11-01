@@ -6,6 +6,7 @@ PII_PATTERNS = {
     "phone": r"\b(\+?\d{1,3}[\s-]?)?(\(?\d{3}\)?[\s-]?)?\d{3}[\s-]?\d{4}\b",
     "credit_card": r"\b(?:\d[ -]*?){13,16}\b",
 }
+MODERATION_MODEL = "omni-moderation-latest"
 
 
 def redact_pii(text: str) -> str:
@@ -21,9 +22,9 @@ def contains_pii(text: str) -> bool:
     return any(re.search(p, text) for p in PII_PATTERNS.values())
 
 
-def check_moderation(client, text: str) -> dict:
+def check_moderation(client: OpenAI, text: str) -> dict:
     """Use OpenAI's moderation model to flag unsafe content."""
-    response = client.moderations.create(model="omni-moderation-latest", input=text)
+    response = client.moderations.create(model=MODERATION_MODEL, input=text)
     results = response.results[0]
 
     categories = results.categories

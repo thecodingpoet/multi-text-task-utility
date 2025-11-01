@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": "2025-11-01T20:29:20.552832",
+    "query": "I'm unable to login into the platform. Please help",
+    "prompt_tokens": 412,
+    "completion_tokens": 70,
+    "total_tokens": 482,
+    "latency_ms": 6804.7,
+    "estimated_cost_usd": 0.000104
+  },
+  {
+    "timestamp": "2025-11-01T20:30:13.907783",
+    "query": "How do I deactivate my account?",
+    "prompt_tokens": 409,
+    "completion_tokens": 65,
+    "total_tokens": 474,
+    "latency_ms": 4777.58,
+    "estimated_cost_usd": 0.0001
+  }
+]
