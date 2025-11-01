@@ -33,7 +33,7 @@ def log_metrics(query, response, latency_ms, cost):
         "cost": round(cost, 6),
         "model": MODEL,
     }
- 
+
     metrics.append(metric_entry)
     with metrics_path.open("w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2, ensure_ascii=False)
@@ -45,19 +45,12 @@ def calculate_cost(prompt_tokens, completion_tokens):
     ) * COMPLETION_TOKEN_COST
 
 
-def format_user_query(query):
-    return (
-        f"User: {query}"
-    )
-
-
 def format_response(content):
     return json.dumps(json.loads(content), indent=4)
 
 
 def process_query(client, messages, query):
-    user_prompt = format_user_query(query)
-    messages.append({"role": "user", "content": user_prompt})
+    messages.append({"role": "user", "content": query})
 
     start = time.perf_counter()
     response = client.chat.completions.create(
@@ -88,6 +81,11 @@ def main():
 
         if query == "exit":
             break
+
+        moderation = check_moderation(client, query)
+        if moderation["flagged"]:
+            print(f"⚠️ Your input may violate content guidelines. Please rephrase.")
+            continue
 
         if contains_pii(query):
             query = redact_pii(query)
