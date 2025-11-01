@@ -4,6 +4,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from datetime import datetime
 from pathlib import Path
+from safety import redact_pii, contains_pii
 
 
 load_dotenv()
@@ -87,6 +88,9 @@ def main():
 
         if query == "exit":
             break
+
+        if contains_pii(query):
+            query = redact_pii(query)
 
         response, latency_ms, cost = process_query(client, messages, query)
 
