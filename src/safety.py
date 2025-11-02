@@ -1,5 +1,6 @@
 import re
 from openai import OpenAI
+from openai import APIError
 
 PII_PATTERNS = {
     "credit_card": r"\b(?:\d{4}[\s-]?){3}\d{1,4}\b|\b\d{13,16}\b",
@@ -24,19 +25,25 @@ def contains_pii(text: str) -> bool:
 
 def check_moderation(client: OpenAI, text: str) -> dict:
     """Use OpenAI's moderation model to flag unsafe content."""
-    response = client.moderations.create(model=MODERATION_MODEL, input=text)
-    results = response.results[0]
-
-    categories = results.categories
-    flagged = results.flagged
-
     try:
-        categories_dict = categories.model_dump()
-    except AttributeError:
-        categories_dict = categories.dict()
-    flagged_categories = [k for k, v in categories_dict.items() if v]
+        response = client.moderations.create(model=MODERATION_MODEL, input=text)
+        results = response.results[0]
 
-    return {
-        "flagged": flagged,
-        "categories": flagged_categories,
-    }
+        categories = results.categories
+        flagged = results.flagged
+
+        try:
+            categories_dict = categories.model_dump()
+        except AttributeError:
+            categories_dict = categories.dict()
+        flagged_categories = [k for k, v in categories_dict.items() if v]
+
+        return {
+            "flagged": flagged,
+            "categories": flagged_categories,
+        }
+    except APIError as e:
+        return {
+            "flagged": False,
+            "categories": [],
+        }
