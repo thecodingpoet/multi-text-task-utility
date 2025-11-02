@@ -28,7 +28,7 @@ cd multi-text-task-utility
 2. Install dependencies:
 
 ```bash
-uv sync
+uv sync --all-groups
 ```
 
 3. Create a `.env` file by copying `.env.example` and replacing the placeholder with your OpenAI API key:
@@ -50,6 +50,8 @@ The application will start an interactive session where you can:
 - Type `exit` or `quit` to quit the application
 
 ## Testing
+
+**Note:** Make sure you've installed all dependencies (including dev dependencies) by running `uv sync --all-groups` before running tests.
 
 Run the test suite using pytest:
 
