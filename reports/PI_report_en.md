@@ -224,7 +224,7 @@ Sample results and detailed metrics are available in [metrics.json](../metrics/m
 ## Improvements
 
 1. **Enhanced PII Detection**: Improve regex patterns and add validation checks to reduce false positives and increase detection accuracy
-2. **Selective Chat History**: Implement optional chat history with configurable token limits to enable contextual conversations while maintaining cost control
+2. **Chat History Token Limits**: Implement configurable token limits for chat history to manage conversation length and control costs while maintaining context
 3. **Response Validation**: Implement stricter JSON schema validation to ensure consistent, properly formatted LLM responses
 4. **Confidence Thresholds**: Add configurable confidence thresholds to automatically escalate low-confidence responses to human agents
 5. **Error Handling**: Add more robust error handling for edge cases in moderation and PII detection

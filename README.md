@@ -5,6 +5,7 @@ A Python application that helps customer support agents by generating concise, f
 ## Features
 
 - 🤖 **AI-Powered Responses**: Uses GPT-4o-mini to generate helpful, factual responses to customer queries
+- 💬 **Conversation History**: Maintains chat context across multiple interactions within a session
 - 🔒 **PII Protection**: Automatically detects and redacts sensitive information (emails, phone numbers, credit cards) before sending to the API
 - 📊 **Metrics Tracking**: Logs query metrics including latency, token usage, and cost to `metrics/metrics.json`
 - 📝 **Structured Output**: Returns responses in JSON format with answer, confidence score, and recommended actions
@@ -63,20 +64,6 @@ uv run pytest tests/ -v
 ```
 
 ## Limitations
-
-### No Chat History
-
-The system does not maintain chat history or pass previous conversations to the LLM. Each query is processed independently without context from prior interactions.
-
-**Rationale**: 
-- **Token Usage Reduction**: Avoiding chat history significantly reduces token consumption, lowering API costs
-
-**Trade-offs**:
-- Cannot reference or build upon previous interactions
-- May result in repetitive responses if users ask follow-up questions
-- Lacks contextual understanding of ongoing conversations
-
-### Other Limitations
 
 1. **Response Length**: Limited to 300 tokens maximum, which may truncate longer explanations
 2. **Model Constraints**: Uses GPT-4o-mini, which may have limitations in complex reasoning compared to larger models

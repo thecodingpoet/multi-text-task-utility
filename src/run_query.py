@@ -100,6 +100,8 @@ def main() -> None:
 
     client = OpenAI()
 
+    messages = [{"role": "system", "content": system_prompt}]
+
     while True:
         query = input("Ask a question: ").strip()
 
@@ -116,13 +118,11 @@ def main() -> None:
         if sanitized_query is None:
             continue
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": sanitized_query},
-        ]
+        messages.append({"role": "user", "content": sanitized_query})
 
         response = process_query(client, messages, sanitized_query)
         if response is None:
+            messages.pop()
             continue
 
         content = response.choices[0].message.content
@@ -148,7 +148,10 @@ def main() -> None:
         )
 
         if not output_blocked:
+            messages.append({"role": "assistant", "content": content})
             print(format_response(content))
+        else:
+            messages.pop()
 
 
 if __name__ == "__main__":
