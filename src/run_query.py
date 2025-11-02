@@ -80,12 +80,16 @@ def validate_input(client: OpenAI, query: str) -> str | None:
 
 def validate_output(client: OpenAI, content: str) -> bool:
     """Validate API response content."""
-    moderation = check_moderation(client, content)
+    try:
+         answer = json.loads(content).get("answer", "")
+    except json.JSONDecodeError:
+        answer = content
+
+    moderation = check_moderation(client, answer)
     if moderation["flagged"]:
         print("🚫  Response withheld due to policy violation.")
         return False
     return True
-
 
 def main() -> None:
     """Main function to run the chatbot."""
@@ -120,7 +124,7 @@ def main() -> None:
         content = response.choices[0].message.content
         if not validate_output(client, content):
             continue
-
+    
         cost = calculate_cost(
             response.usage.prompt_tokens, response.usage.completion_tokens
         )
