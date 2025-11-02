@@ -120,6 +120,7 @@ def main() -> None:
 
         messages.append({"role": "user", "content": sanitized_query})
 
+        print("💭 Thinking...")
         response = process_query(client, messages, sanitized_query)
         if response is None:
             messages.pop()
