@@ -223,10 +223,7 @@ Sample results and detailed metrics are available in [metrics.json](../metrics/m
 
 ## Improvements
 
-1. **Enhanced PII Detection**: Improve regex patterns and add validation checks to reduce false positives and increase detection accuracy
-2. **Chat History Token Limits**: Implement configurable token limits for chat history to manage conversation length and control costs while maintaining context
-3. **Response Validation**: Implement stricter JSON schema validation to ensure consistent, properly formatted LLM responses
-4. **Confidence Thresholds**: Add configurable confidence thresholds to automatically escalate low-confidence responses to human agents
-5. **Error Handling**: Add more robust error handling for edge cases in moderation and PII detection
-6. **Moderation Category Tracking**: Log the specific moderation categories flagged when content is blocked (e.g., violence, hate speech, sexual content) to provide better insights into why responses were withheld and enable more targeted analysis of moderation patterns
+1. **Chat History Token Limits**: Implement configurable token limits for chat history to manage conversation length and control costs while maintaining context
+2. **Moderation Category Tracking**: Log the specific moderation categories flagged when content is blocked (e.g., violence, hate speech, sexual content) to provide better insights into why responses were withheld and enable more targeted analysis of moderation patterns. Note: The moderation API already provides this data; it just needs to be included in the metrics logging.
+3. **Response Validation**: Implement stricter JSON schema validation to ensure consistent, properly formatted LLM responses with required fields (`answer`, `confidence`, `actions`) and correct data types
 
