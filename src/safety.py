@@ -2,9 +2,9 @@ import re
 from openai import OpenAI
 
 PII_PATTERNS = {
+    "credit_card": r"\b(?:\d{4}[\s-]?){3}\d{1,4}\b|\b\d{13,16}\b",
     "email": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
     "phone": r"\b(\+?\d{1,3}[\s-]?)?(\(?\d{3}\)?[\s-]?)?\d{3}[\s-]?\d{4}\b",
-    "credit_card": r"\b(?:\d[ -]*?){13,16}\b",
 }
 MODERATION_MODEL = "omni-moderation-latest"
 

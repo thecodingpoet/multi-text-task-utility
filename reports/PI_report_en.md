@@ -171,8 +171,8 @@ Status: Processed with redaction
 
 **Example 3: Multiple PII Types**
 ```
-Original Input: "My account linked to john@example.com and phone 415-555-0199 has a card ending in 4532"
-Sanitized Query: "My account linked to [REDACTED-EMAIL] and phone [REDACTED-PHONE] has a card ending in [REDACTED-CREDIT_CARD]"
+Original Input: "My account linked to john@example.com and phone 415-555-0199 has a card 1234-5678-9012-3456"
+Sanitized Query: "My account linked to [REDACTED-EMAIL] and phone [REDACTED-PHONE] has a card [REDACTED-CREDIT_CARD]"
 Status: All PII redacted before processing
 ```
 
