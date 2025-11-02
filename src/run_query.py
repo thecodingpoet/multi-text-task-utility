@@ -48,7 +48,9 @@ def format_response(content: str) -> str:
         return content
 
 
-def process_query(client: OpenAI, messages: list[dict], query: str) -> ChatCompletion | None:
+def process_query(
+    client: OpenAI, messages: list[dict], query: str
+) -> ChatCompletion | None:
     """Send query to the model and return the completion response."""
     try:
         response = client.chat.completions.create(
@@ -81,7 +83,7 @@ def validate_input(client: OpenAI, query: str) -> str | None:
 def validate_output(client: OpenAI, content: str) -> bool:
     """Validate API response content."""
     try:
-         answer = json.loads(content).get("answer", "")
+        answer = json.loads(content).get("answer", "")
     except json.JSONDecodeError:
         answer = content
 
@@ -90,6 +92,7 @@ def validate_output(client: OpenAI, content: str) -> bool:
         print("🚫  Response withheld due to policy violation.")
         return False
     return True
+
 
 def main() -> None:
     """Main function to run the chatbot."""
@@ -104,6 +107,7 @@ def main() -> None:
             continue
 
         if query.lower() in ["exit", "quit"]:
+            print("👋 Goodbye!")
             break
 
         start_time = time.perf_counter()
@@ -122,9 +126,8 @@ def main() -> None:
             continue
 
         content = response.choices[0].message.content
-        if not validate_output(client, content):
-            continue
-    
+        output_blocked = not validate_output(client, content)
+
         cost = calculate_cost(
             response.usage.prompt_tokens, response.usage.completion_tokens
         )
@@ -140,10 +143,12 @@ def main() -> None:
                 "total_tokens": response.usage.total_tokens,
                 "latency_ms": round(latency_ms, 2),
                 "estimated_cost_usd": round(cost, 6),
+                "moderation_blocked": output_blocked,
             }
         )
 
-        print(format_response(content))
+        if not output_blocked:
+            print(format_response(content))
 
 
 if __name__ == "__main__":

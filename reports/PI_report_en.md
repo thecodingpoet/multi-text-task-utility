@@ -74,8 +74,20 @@ The system implements a multi-layered security architecture to protect user priv
                           │                        │
                     ┌─────▼─────┐          ┌───────▼────────┐
                     │  Blocked  │          │  Safe Response │
-                    │ (Rejected)│          │  + Metrics Log │
-                    └───────────┘          └────────────────┘
+                    │ (Rejected)│          │                │
+                    └─────┬─────┘          └───────┬────────┘
+                          │                        │
+                          └────────────┬───────────┘
+                                       │
+                                       ▼
+                          ┌───────────────────────────┐
+                          │     Metrics Logging       │
+                          ├───────────────────────────┤
+                          │ • Token Usage            │
+                          │ • Latency                │
+                          │ • Cost Tracking          │
+                          │ • Moderation Status      │
+                          └──────────────────────────┘
 ```
 
 ### Input Guard
@@ -185,9 +197,10 @@ LLM Generated Response: [Response contains inappropriate content that violates m
 Result: 🚫  Response withheld due to policy violation.
 Status: Blocked - Response not returned to user
 Reason: Output moderation check flagged the generated content before it could be sent to the user
+Cost Tracking: Metrics logged with moderation_blocked: true
 ```
 
-Note: While rare, this scenario can occur if the LLM generates content that violates content policies despite having a benign input. The output guard ensures such responses are never delivered to users.
+Note: While rare, this scenario can occur if the LLM generates content that violates content policies despite having a benign input. The output guard ensures such responses are never delivered to users. **However, metrics are still logged for blocked responses** since the LLM API request has already been made and incurred costs. This ensures accurate cost tracking for all API usage, including instances where content is blocked.
 
 ## Metrics Summary
 
@@ -197,6 +210,9 @@ Sample results and detailed metrics are available in [metrics.json](../metrics/m
 - Token usage (prompt, completion, and total tokens)
 - Latency measurements (in milliseconds)
 - Estimated API costs (in USD)
+- Moderation status (`moderation_blocked` field indicating whether output was blocked)
+
+**Important**: Metrics are logged for **all** LLM requests, including those where the output is blocked by the moderation guard. This ensures complete cost tracking since API costs are incurred as soon as the LLM processes the request, regardless of whether the output is ultimately delivered to the user.
 
 ## Challenges
 
@@ -212,4 +228,5 @@ Sample results and detailed metrics are available in [metrics.json](../metrics/m
 3. **Response Validation**: Implement stricter JSON schema validation to ensure consistent, properly formatted LLM responses
 4. **Confidence Thresholds**: Add configurable confidence thresholds to automatically escalate low-confidence responses to human agents
 5. **Error Handling**: Add more robust error handling for edge cases in moderation and PII detection
+6. **Moderation Category Tracking**: Log the specific moderation categories flagged when content is blocked (e.g., violence, hate speech, sexual content) to provide better insights into why responses were withheld and enable more targeted analysis of moderation patterns
 
