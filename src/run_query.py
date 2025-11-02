@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 from openai import OpenAI
@@ -94,12 +95,21 @@ def validate_output(client: OpenAI, content: str) -> bool:
     return True
 
 
+def check_api_key() -> None:
+    """Check if OPENAI_API_KEY is set, exit if not."""
+    if not os.getenv("OPENAI_API_KEY"):
+        print("❌  ERROR: OPENAI_API_KEY environment variable is not set.")
+        print("    → Please set it in your .env file.")
+        exit(1)
+
+
 def main() -> None:
     """Main function to run the chatbot."""
-    system_prompt = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8")
+    check_api_key()
 
     client = OpenAI()
 
+    system_prompt = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8")
     messages = [{"role": "system", "content": system_prompt}]
 
     while True:
